@@ -1,11 +1,11 @@
 /**
- * 520 情人节 · ASCII 终端打印 + 命运转盘
- * 密码默认：520
+ * 520 情人节 · 肖像揭示 + 命运转盘
+ * 密码默认：5201314
  */
 
-const PASSWORD = "520";
+const PASSWORD = "5201314";
 const PRIZES = [520, 666, 888, 999, 1314];
-const AVATAR_SRC = "assets/avatar.png";
+const AVATAR_SRC = "assets/0e548e063fdc00928a08868435e5eb56.jpg";
 
 const IS_WECHAT = /MicroMessenger/i.test(navigator.userAgent);
 const IS_MOBILE = /Mobile|Android|iPhone|iPad|HarmonyOS/i.test(navigator.userAgent);
@@ -13,8 +13,6 @@ const FONT_WHEEL_SM = 'bold 13px "DIN Alternate", "PingFang SC", sans-serif';
 
 let wheelLogicalSize = 320;
 let wheelDpr = 1;
-let simplePixelDraw = IS_WECHAT;
-
 // —— DOM ——
 const screens = {
   password: document.getElementById("screen-password"),
@@ -83,51 +81,89 @@ function setupWheelCanvas() {
 }
 
 // ═══════════════════════════════════════
-// 星空背景
+// 矩阵雨背景（520 霓虹配色）
 // ═══════════════════════════════════════
-function initStarfield() {
+const MATRIX_CHARS =
+  "5201314♥愛アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン01";
+
+function initMatrixRain() {
   const ctx = starfieldCanvas.getContext("2d");
-  const stars = [];
-  const count = IS_WECHAT ? 80 : IS_MOBILE ? 120 : 160;
+  let columns = [];
+  let fontSize = 16;
+  let columnCount = 0;
+  let frameSkip = 0;
+
+  function matrixColors(tone) {
+    if (tone < 0.33) {
+      return { head: "#00f0ff", trail: "rgba(0, 240, 255, 0.28)" };
+    }
+    if (tone < 0.66) {
+      return { head: "#ff6b9d", trail: "rgba(255, 45, 122, 0.25)" };
+    }
+    return { head: "#b8ffb8", trail: "rgba(120, 255, 160, 0.22)" };
+  }
 
   function resize() {
     starfieldCanvas.width = window.innerWidth;
     starfieldCanvas.height = window.innerHeight;
+    fontSize = IS_WECHAT ? 15 : IS_MOBILE ? 16 : 18;
+    columnCount = Math.ceil(starfieldCanvas.width / fontSize);
+    columns = Array.from({ length: columnCount }, (_, i) => ({
+      y: Math.random() * -starfieldCanvas.height,
+      speed: (IS_WECHAT ? 2.5 : 3) + Math.random() * (IS_WECHAT ? 4 : 6),
+      tone: (i % 3) / 3 + Math.random() * 0.2,
+      char: MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)],
+    }));
   }
 
-  function seed() {
-    stars.length = 0;
-    for (let i = 0; i < count; i++) {
-      stars.push({
-        x: Math.random() * starfieldCanvas.width,
-        y: Math.random() * starfieldCanvas.height,
-        r: Math.random() * 1.5 + 0.3,
-        phase: Math.random() * Math.PI * 2,
-        speed: Math.random() * 0.02 + 0.005,
-      });
-    }
-  }
+  function draw() {
+    frameSkip = (frameSkip + 1) % (IS_WECHAT ? 2 : 1);
+    if (frameSkip === 0) {
+      ctx.fillStyle = "rgba(5, 5, 16, 0.12)";
+      ctx.fillRect(0, 0, starfieldCanvas.width, starfieldCanvas.height);
+      ctx.font = `${fontSize}px "SF Mono", Menlo, Consolas, monospace`;
+      ctx.textBaseline = "top";
 
-  function draw(t) {
-    ctx.fillStyle = "rgba(5, 5, 16, 0.25)";
-    ctx.fillRect(0, 0, starfieldCanvas.width, starfieldCanvas.height);
+      for (let i = 0; i < columnCount; i++) {
+        const col = columns[i];
+        const x = i * fontSize;
+        const headY = col.y;
+        const colors = matrixColors(col.tone);
 
-    for (const s of stars) {
-      const alpha = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(t * s.speed + s.phase));
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255, 200, 255, ${alpha})`;
-      ctx.fill();
+        if (headY > fontSize) {
+          ctx.fillStyle = colors.trail;
+          ctx.fillText(
+            MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)],
+            x,
+            headY - fontSize
+          );
+        }
+
+        ctx.fillStyle = colors.head;
+        if (!IS_WECHAT) {
+          ctx.shadowColor = colors.head;
+          ctx.shadowBlur = 8;
+        }
+        ctx.fillText(col.char, x, headY);
+        ctx.shadowBlur = 0;
+
+        col.char =
+          MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)];
+        col.y += col.speed;
+
+        if (col.y > starfieldCanvas.height + fontSize * 4) {
+          col.y = -fontSize * (2 + Math.random() * 12);
+          col.speed = (IS_WECHAT ? 2.5 : 3) + Math.random() * (IS_WECHAT ? 4 : 6);
+          col.tone = Math.random();
+        }
+      }
     }
+
     requestAnimationFrame(draw);
   }
 
   resize();
-  seed();
-  window.addEventListener("resize", () => {
-    resize();
-    seed();
-  });
+  window.addEventListener("resize", resize);
   requestAnimationFrame(draw);
 }
 
@@ -180,156 +216,118 @@ function initPassword() {
 }
 
 // ═══════════════════════════════════════
-// ASCII 终端打印（亮度 → 字符密度，黑白裁剪）
+// 真实肖像 · 扫描揭示
 // ═══════════════════════════════════════
-const ASCII_RAMP = " .'`#░▒▓█";
-const ASCII_ALPHA_MIN = IS_WECHAT ? 88 : 72;
-const ASCII_LUM_FLOOR = 0.14;
-const ASCII_FONT =
-  '"SF Mono", "Menlo", "Consolas", "Courier New", monospace';
-
-function asciiLuminance(r, g, b) {
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-}
-
-/** 高分辨率采样 → 主体包围盒（透明/低 alpha 不计入） */
-function computeSubjectBounds(data, w, h, alphaMin) {
-  let minX = w;
-  let minY = h;
-  let maxX = -1;
-  let maxY = -1;
-
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const i = (y * w + x) * 4;
-      if (data[i + 3] < alphaMin) continue;
-      const lum = asciiLuminance(data[i], data[i + 1], data[i + 2]) / 255;
-      if (lum < ASCII_LUM_FLOOR) continue;
-      if (minX > x) minX = x;
-      if (minY > y) minY = y;
-      if (maxX < x) maxX = x;
-      if (maxY < y) maxY = y;
-    }
-  }
-
-  if (maxX < minX) return null;
-
-  const bw = maxX - minX + 1;
-  const bh = maxY - minY + 1;
-  const pad = Math.max(1, Math.round(Math.min(bw, bh) * 0.03));
-  const sx = Math.max(0, minX - pad);
-  const sy = Math.max(0, minY - pad);
-  const ex = Math.min(w - 1, maxX + pad);
-  const ey = Math.min(h - 1, maxY + pad);
+function fitPortraitCanvas(img) {
+  const vw = window.innerWidth || 375;
+  const vh = window.innerHeight || 600;
+  const maxW = IS_WECHAT ? Math.min(vw * 0.88, 340) : vw * 0.9;
+  const maxH = IS_WECHAT
+    ? Math.min(vh * 0.68, vh - 100)
+    : IS_MOBILE
+      ? vh * 0.72
+      : vh * 0.75;
+  const scale = Math.min(maxW / img.width, maxH / img.height, 1);
   return {
-    sx,
-    sy,
-    sw: ex - sx + 1,
-    sh: ey - sy + 1,
+    w: Math.round(img.width * scale),
+    h: Math.round(img.height * scale),
   };
 }
 
-function sampleAsciiGrid(img, bounds, gridW, gridH) {
-  const off = document.createElement("canvas");
-  off.width = gridW;
-  off.height = gridH;
-  const offCtx = off.getContext("2d");
-  offCtx.fillStyle = "#000";
-  offCtx.fillRect(0, 0, gridW, gridH);
-  offCtx.drawImage(
-    img,
-    bounds.sx,
-    bounds.sy,
-    bounds.sw,
-    bounds.sh,
-    0,
-    0,
-    gridW,
-    gridH
-  );
-  return offCtx.getImageData(0, 0, gridW, gridH).data;
-}
-
-function asciiCharFromPixel(data, i) {
-  const a = data[i + 3];
-  if (a < ASCII_ALPHA_MIN) return " ";
-  const lum = asciiLuminance(data[i], data[i + 1], data[i + 2]) / 255;
-  if (lum < ASCII_LUM_FLOOR) return " ";
-  const edge = a / 255;
-  const boosted = Math.min(1, lum * (0.72 + edge * 0.28));
-  const idx = Math.min(
-    ASCII_RAMP.length - 1,
-    Math.floor(boosted * (ASCII_RAMP.length - 1))
-  );
-  return idx <= 0 ? " " : ASCII_RAMP[idx];
-}
-
-function buildAsciiPrintOrder(data, gridW, gridH) {
-  const printOrder = [];
-  for (let gy = 0; gy < gridH; gy++) {
-    for (let gx = 0; gx < gridW; gx++) {
-      const i = (gy * gridW + gx) * 4;
-      const ch = asciiCharFromPixel(data, i);
-      if (ch === " ") continue;
-      printOrder.push({ gx, gy, ch });
-    }
+function drawPortraitGlitch(ctx, w, h, elapsed) {
+  if (IS_WECHAT || Math.sin(elapsed * 27.3) < 0.82) return;
+  const bands = 2 + Math.floor(Math.random() * 2);
+  for (let n = 0; n < bands; n++) {
+    const y = Math.random() * h;
+    const bandH = 2 + Math.random() * 4;
+    const shift = (Math.random() - 0.5) * 8;
+    ctx.fillStyle = `rgba(255, 45, 122, ${0.06 + Math.random() * 0.07})`;
+    ctx.fillRect(shift, y, w, bandH);
+    ctx.fillStyle = `rgba(0, 240, 255, ${0.04 + Math.random() * 0.05})`;
+    ctx.fillRect(-shift * 0.5, y + 1, w, bandH);
   }
-  return printOrder;
 }
 
-function asciiCharStyle(ch) {
-  if (ch === " ") return null;
-  const idx = ASCII_RAMP.indexOf(ch);
-  if (idx <= 0) return null;
-  const t = idx / (ASCII_RAMP.length - 1);
-  const gray = Math.round(118 + t * 137);
-  const alpha = 0.42 + t * 0.58;
-  return `rgba(${gray}, ${gray}, ${gray}, ${alpha})`;
-}
-
-function drawAsciiCell(ctx, cell, charW, lineH) {
-  if (cell.ch === " ") return;
-  const style = asciiCharStyle(cell.ch);
-  if (!style) return;
-  ctx.fillStyle = style;
-  ctx.fillText(cell.ch, cell.gx * charW, (cell.gy + 1) * lineH);
-}
-
-function drawPrintScanline(ctx, canvasW, rowY, lineH, elapsed) {
+function drawPortraitScanline(ctx, w, h, scanY, elapsed) {
   const pulse = 0.5 + 0.5 * Math.sin(elapsed * 12);
-  const lineY = Math.floor(rowY + lineH / 2) + 0.5;
+  const y = Math.min(h, Math.max(0, scanY));
 
   ctx.save();
-  if (!simplePixelDraw) {
-    const grad = ctx.createLinearGradient(0, rowY, 0, rowY + lineH);
-    grad.addColorStop(0, "rgba(255, 255, 255, 0)");
-    grad.addColorStop(0.5, `rgba(255, 255, 255, ${0.06 * pulse})`);
-    grad.addColorStop(1, "rgba(255, 255, 255, 0)");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, rowY, canvasW, lineH);
+  const beamH = Math.min(80, h * 0.18);
+  const top = Math.max(0, y - beamH * 0.4);
+  const grad = ctx.createLinearGradient(0, top, 0, top + beamH);
+  grad.addColorStop(0, "rgba(178, 77, 255, 0)");
+  grad.addColorStop(0.35, `rgba(255, 45, 122, ${0.12 * pulse})`);
+  grad.addColorStop(0.5, `rgba(0, 240, 255, ${0.28 * pulse})`);
+  grad.addColorStop(0.65, `rgba(255, 45, 122, ${0.1 * pulse})`);
+  grad.addColorStop(1, "rgba(178, 77, 255, 0)");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, top, w, beamH);
+
+  if (!IS_WECHAT) {
+    ctx.shadowColor = "#00f0ff";
+    ctx.shadowBlur = 14;
+  }
+  ctx.strokeStyle = `rgba(0, 240, 255, ${0.65 + 0.35 * pulse})`;
+  ctx.lineWidth = IS_WECHAT ? 1 : 2;
+  ctx.beginPath();
+  ctx.moveTo(0, y);
+  ctx.lineTo(w, y);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
+function drawPortraitVignette(ctx, w, h) {
+  const vg = ctx.createRadialGradient(
+    w / 2,
+    h / 2,
+    h * 0.25,
+    w / 2,
+    h / 2,
+    Math.max(w, h) * 0.72
+  );
+  vg.addColorStop(0, "rgba(0, 0, 0, 0)");
+  vg.addColorStop(0.75, "rgba(0, 0, 0, 0)");
+  vg.addColorStop(1, "rgba(5, 5, 16, 0.45)");
+  ctx.fillStyle = vg;
+  ctx.fillRect(0, 0, w, h);
+}
+
+function drawPortraitReveal(ctx, img, w, h, progress, elapsed, done) {
+  ctx.fillStyle = "#030308";
+  ctx.fillRect(0, 0, w, h);
+
+  const eased = done ? 1 : 1 - Math.pow(1 - progress, 2.2);
+  const revealH = h * eased;
+  const pop = 0.92 + eased * 0.08;
+  const fade = Math.min(1, progress * 2.8);
+
+  ctx.save();
+  ctx.globalAlpha = fade;
+  const cx = w / 2;
+  const cy = h / 2;
+  ctx.translate(cx, cy);
+  ctx.scale(pop, pop);
+  ctx.translate(-cx, -cy);
+
+  if (!done) {
+    ctx.beginPath();
+    ctx.rect(0, 0, w, revealH);
+    ctx.clip();
   }
 
-  ctx.strokeStyle = `rgba(220, 220, 220, ${0.22 + 0.18 * pulse})`;
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(0, lineY);
-  ctx.lineTo(canvasW, lineY);
-  ctx.stroke();
+  ctx.drawImage(img, 0, 0, w, h);
   ctx.restore();
+
+  if (!done && revealH < h) {
+    drawPortraitScanline(ctx, w, h, revealH, elapsed);
+  }
+  drawPortraitVignette(ctx, w, h);
+  if (!IS_WECHAT) drawPortraitGlitch(ctx, w, h, elapsed);
 }
 
-function drawPrintCursor(ctx, cell, charW, lineH, elapsed, fontSize) {
-  const blink = Math.sin(elapsed * 10) > 0 ? 1 : 0.4;
-  const x = cell.gx * charW;
-  const y = cell.gy * lineH;
-  ctx.save();
-  ctx.fillStyle = `rgba(245, 245, 245, ${0.75 * blink})`;
-  ctx.font = `bold ${fontSize}px ${ASCII_FONT}`;
-  ctx.fillText("▌", x, y + lineH);
-  ctx.restore();
-}
-
-function formatPrintProgress(elapsed, duration) {
+function formatRevealProgress(elapsed, duration) {
   if (elapsed <= 0) return 0;
   if (elapsed >= duration) return 100;
   return Math.min(99, Math.max(0, Math.round((elapsed / duration) * 100)));
@@ -340,102 +338,28 @@ function startPixelAssembly() {
   img.src = AVATAR_SRC;
 
   img.onload = () => {
-    const probeW = IS_WECHAT ? 100 : 140;
-    const probeH = Math.max(1, Math.round(probeW * (img.height / img.width)));
-    const probe = document.createElement("canvas");
-    probe.width = probeW;
-    probe.height = probeH;
-    const probeCtx = probe.getContext("2d");
-    probeCtx.drawImage(img, 0, 0, probeW, probeH);
-    const probeData = probeCtx.getImageData(0, 0, probeW, probeH).data;
-    const bounds =
-      computeSubjectBounds(probeData, probeW, probeH, ASCII_ALPHA_MIN) ||
-      { sx: 0, sy: 0, sw: probeW, sh: probeH };
-
-    const cropAspect = bounds.sh / bounds.sw;
-    const GRID_W = IS_WECHAT ? 48 : IS_MOBILE ? 56 : 64;
-    const GRID_H = Math.max(8, Math.round(GRID_W * cropAspect));
-    const fontSize = IS_WECHAT ? 5 : IS_MOBILE ? 6 : 7;
-    const lineH = fontSize + 1;
-    const ctx = pixelCanvas.getContext("2d");
-    ctx.font = `${fontSize}px ${ASCII_FONT}`;
-    const charW = Math.max(fontSize * 0.58, ctx.measureText("█").width);
-    const canvasW = Math.ceil(GRID_W * charW);
-    const canvasH = Math.ceil(GRID_H * lineH);
-
+    const { w: canvasW, h: canvasH } = fitPortraitCanvas(img);
     pixelCanvas.width = canvasW;
     pixelCanvas.height = canvasH;
-
-    const scaleX = img.width / probeW;
-    const scaleY = img.height / probeH;
-    const srcBounds = {
-      sx: bounds.sx * scaleX,
-      sy: bounds.sy * scaleY,
-      sw: bounds.sw * scaleX,
-      sh: bounds.sh * scaleY,
-    };
-
-    const data = sampleAsciiGrid(img, srcBounds, GRID_W, GRID_H);
-    const printOrder = buildAsciiPrintOrder(data, GRID_W, GRID_H);
-    const totalCells = printOrder.length;
+    const ctx = pixelCanvas.getContext("2d");
     let startTime = null;
-    const duration = 5.5;
-    const printDuration = 4.85;
-
-    ctx.textBaseline = "bottom";
-    ctx.textAlign = "left";
+    const duration = 4.5;
+    const revealDuration = 3.6;
 
     function frame(now) {
       if (startTime == null) startTime = now;
       const elapsed = Math.max(0, (now - startTime) / 1000);
-      pixelProgress.textContent = `${formatPrintProgress(elapsed, duration)}%`;
+      pixelProgress.textContent = `${formatRevealProgress(elapsed, duration)}%`;
 
-      ctx.fillStyle = "#000000";
-      ctx.fillRect(0, 0, canvasW, canvasH);
-      ctx.font = `${fontSize}px ${ASCII_FONT}`;
+      const progress = Math.min(1, elapsed / revealDuration);
+      const done = progress >= 1;
 
-      const printT = Math.min(1, elapsed / printDuration);
-      const eased = 1 - Math.pow(1 - printT, 2.2);
-      const visibleCount = Math.min(
-        totalCells,
-        Math.floor(eased * totalCells)
-      );
+      drawPortraitReveal(ctx, img, canvasW, canvasH, progress, elapsed, done);
 
-      for (let i = 0; i < visibleCount; i++) {
-        drawAsciiCell(ctx, printOrder[i], charW, lineH);
-      }
-
-      const printing = totalCells > 0 && visibleCount < totalCells;
-      if (printing) {
-        const head = printOrder[visibleCount];
-        drawPrintScanline(ctx, canvasW, head.gy * lineH, lineH, elapsed);
-        drawPrintCursor(ctx, head, charW, lineH, elapsed, fontSize);
-      } else if (totalCells > 0 && elapsed < printDuration + 0.15) {
-        const tail = printOrder[totalCells - 1];
-        drawPrintScanline(
-          ctx,
-          canvasW,
-          (tail.gy + 1) * lineH,
-          lineH,
-          elapsed
-        );
-      }
-
-      if (elapsed < duration || printing) {
+      if (elapsed < duration) {
         requestAnimationFrame(frame);
       } else {
-        for (let i = 0; i < totalCells; i++) {
-          drawAsciiCell(ctx, printOrder[i], charW, lineH);
-        }
-
-        ctx.strokeStyle = "rgba(180, 180, 180, 0.35)";
-        ctx.lineWidth = 1;
-        ctx.strokeRect(0.5, 0.5, canvasW - 1, canvasH - 1);
-        if (!simplePixelDraw) {
-          ctx.strokeStyle = "rgba(80, 80, 80, 0.2)";
-          ctx.strokeRect(2.5, 2.5, canvasW - 5, canvasH - 5);
-        }
-
+        drawPortraitReveal(ctx, img, canvasW, canvasH, 1, elapsed, true);
         pixelProgress.textContent = "100%";
         pixelDoneMsg.hidden = false;
 
@@ -648,6 +572,6 @@ function runSecondSpin() {
 // 启动
 // ═══════════════════════════════════════
 initMobileEnv();
-initStarfield();
+initMatrixRain();
 initPassword();
 initWheel();

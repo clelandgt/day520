@@ -224,9 +224,11 @@ textarea {
   80% { transform: translateX(6px); }
 }
 
-/* —— 像素屏（黑白终端） —— */
+/* —— 肖像揭示屏（全屏霓虹） —— */
 #screen-pixel {
-  background: radial-gradient(ellipse 80% 60% at 50% 45%, #0a0a0a 0%, #000 70%);
+  padding: 0;
+  justify-content: stretch;
+  background: transparent;
 }
 
 .status-line {
@@ -234,77 +236,74 @@ textarea {
   top: calc(1rem + var(--safe-top));
   left: 50%;
   transform: translateX(-50%);
+  z-index: 2;
   font-family: "SF Mono", "Menlo", "Consolas", monospace;
   font-size: 0.72rem;
   letter-spacing: 0.1em;
-  color: rgba(200, 200, 200, 0.55);
+  color: rgba(200, 200, 220, 0.5);
+  pointer-events: none;
 }
 
 #screen-pixel .tag {
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--cyan);
+  text-shadow: 0 0 12px rgba(0, 240, 255, 0.45);
 }
 
-.terminal-portrait {
-  position: relative;
-  padding: 10px 12px;
-  background: #000;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.9),
-    0 12px 40px rgba(0, 0, 0, 0.65),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}
-
-.terminal-portrait::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(255, 255, 255, 0.018) 2px,
-    rgba(255, 255, 255, 0.018) 4px
-  );
-  z-index: 1;
-}
-
-.terminal-portrait::after {
-  content: "root@520:~$";
-  position: absolute;
-  top: -1.35rem;
-  left: 0;
-  font-family: "SF Mono", "Menlo", "Consolas", monospace;
-  font-size: 0.65rem;
-  letter-spacing: 0.06em;
-  color: rgba(160, 160, 160, 0.45);
+.portrait-stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+  padding:
+    calc(2.25rem + var(--safe-top))
+    max(0.5rem, env(safe-area-inset-left, 0px))
+    calc(3.5rem + var(--safe-bottom))
+    max(0.5rem, env(safe-area-inset-right, 0px));
 }
 
 #pixel-canvas {
   display: block;
-  position: relative;
-  z-index: 0;
-  max-width: min(88vw, 360px);
-  max-height: min(62vh, calc(var(--vh, 1vh) * 62));
-  background: #000;
-  image-rendering: pixelated;
+  max-width: min(90vw, 100%);
+  max-height: min(75vh, calc(var(--vh, 1vh) * 75));
+  width: auto;
+  height: auto;
+  background: transparent;
+  filter: drop-shadow(0 0 24px rgba(255, 45, 122, 0.35))
+    drop-shadow(0 0 40px rgba(178, 77, 255, 0.15));
+}
+
+.pixel-footer {
+  position: absolute;
+  bottom: calc(1rem + var(--safe-bottom));
+  left: 0;
+  right: 0;
+  z-index: 2;
+  text-align: center;
+  pointer-events: none;
 }
 
 .progress-text {
-  margin-top: 1rem;
+  margin-top: 0;
   font-family: "SF Mono", "Menlo", "Consolas", monospace;
   font-size: 0.82rem;
-  color: rgba(230, 230, 230, 0.75);
   letter-spacing: 0.18em;
+  background: linear-gradient(90deg, var(--pink), var(--cyan), var(--purple));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 0 10px rgba(255, 45, 122, 0.4));
 }
 
 .done-msg {
   margin-top: 0.75rem;
   font-family: "SF Mono", "Menlo", "Consolas", monospace;
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--cyan);
   letter-spacing: 0.12em;
+  text-shadow: 0 0 14px rgba(0, 240, 255, 0.55);
   animation: pulse-text 1.5s ease-in-out infinite;
 }
 
@@ -314,6 +313,30 @@ textarea {
 }
 
 /* —— 转盘屏 —— */
+#screen-wheel {
+  padding-left: max(1rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1rem, env(safe-area-inset-right, 0px));
+}
+
+#screen-wheel.active {
+  justify-content: center;
+  align-items: center;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.wheel-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: min(92vw, 380px);
+  margin: auto;
+  flex-shrink: 0;
+  text-align: center;
+}
+
 .wheel-title {
   font-family: var(--font-display);
   font-size: clamp(1.2rem, 4vw, 1.8rem);
@@ -336,6 +359,7 @@ textarea {
   position: relative;
   width: min(78vw, 320px);
   height: min(78vw, 320px);
+  margin-inline: auto;
   margin-bottom: 1.25rem;
   flex-shrink: 0;
 }
@@ -564,19 +588,9 @@ html.wechat .glitch-title::after {
   opacity: 0.35;
 }
 
-html.wechat .terminal-portrait::before {
-  opacity: 0.65;
-}
-
-#screen-wheel.active {
-  justify-content: flex-start;
-  padding-top: calc(0.75rem + var(--safe-top));
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-#screen-wheel.active .wheel-title {
-  margin-top: 0.25rem;
+html.wechat #pixel-canvas {
+  max-width: min(88vw, 100%);
+  max-height: min(68vh, calc(var(--vh, 1vh) * 68));
 }
 
 @media (max-height: 640px) {
@@ -599,6 +613,17 @@ html.wechat .terminal-portrait::before {
 
   .wheel-sub {
     margin-bottom: 0.75rem;
+  }
+
+  .wheel-wrap {
+    width: min(72vw, 280px);
+    height: min(72vw, 280px);
+    margin-bottom: 0.75rem;
+  }
+
+  .wheel-result {
+    margin-top: 0.65rem;
+    font-size: 1.25rem;
   }
 }
 

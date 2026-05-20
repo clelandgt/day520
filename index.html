@@ -20,7 +20,7 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <canvas id="starfield" aria-hidden="true"></canvas>
+  <canvas id="starfield" aria-hidden="true" aria-label="矩阵雨背景"></canvas>
 
   <section id="screen-password" class="screen active">
     <h1 class="glitch-title" data-text="520 PROTOCOL">520 PROTOCOL</h1>
@@ -43,40 +43,44 @@
     </label>
     <button type="button" id="unlock-btn" class="btn-unlock">解锁</button>
     <p id="password-hint" class="hint" hidden>密码不对哦，再想想 💫</p>
-    <p class="hint subtle">提示：三个数字，代表我爱你</p>
+    <p class="hint subtle">提示：花里面小卡片有密码</p>
   </section>
 
   <section id="screen-pixel" class="screen">
-    <p class="status-line"><span class="tag">$</span> cat portrait.txt <span class="tag">--mono</span></p>
-    <div class="terminal-portrait">
-      <canvas id="pixel-canvas" aria-label="ASCII 终端头像打印动画"></canvas>
+    <p class="status-line pixel-status"><span class="tag">$</span> reveal portrait <span class="tag">--scan</span></p>
+    <div class="portrait-stage">
+      <canvas id="pixel-canvas" aria-label="肖像扫描揭示动画"></canvas>
     </div>
-    <p id="pixel-progress" class="progress-text">0%</p>
-    <p id="pixel-done-msg" class="done-msg" hidden>EOF · 进入命运转盘</p>
+    <div class="pixel-footer">
+      <p id="pixel-progress" class="progress-text">0%</p>
+      <p id="pixel-done-msg" class="done-msg" hidden>EOF · 进入命运转盘</p>
+    </div>
   </section>
 
   <section id="screen-wheel" class="screen">
-    <h2 class="wheel-title">命运转盘 <span class="accent">FATE.SPIN</span></h2>
-    <p class="wheel-sub">奖池：520 · 666 · 888 · 999 · 1314</p>
+    <div class="wheel-stage">
+      <h2 class="wheel-title">幸运转盘 <span class="accent">FATE.SPIN</span></h2>
+      <p class="wheel-sub">奖池：520 · 666 · 888 · 999 · 1314</p>
 
-    <div class="wheel-wrap">
-      <div class="pointer" aria-hidden="true"></div>
-      <canvas id="wheel-canvas" width="420" height="420" role="img" aria-label="抽奖转盘"></canvas>
+      <div class="wheel-wrap">
+        <div class="pointer" aria-hidden="true"></div>
+        <canvas id="wheel-canvas" width="420" height="420" role="img" aria-label="抽奖转盘"></canvas>
+      </div>
+
+      <button id="spin-btn" type="button" class="btn-primary">
+        <span class="btn-glow"></span>
+        启动幸运
+      </button>
+
+      <p id="wheel-result" class="wheel-result" hidden></p>
     </div>
-
-    <button id="spin-btn" type="button" class="btn-primary">
-      <span class="btn-glow"></span>
-      启动摇奖
-    </button>
-
-    <p id="wheel-result" class="wheel-result" hidden></p>
   </section>
 
   <div id="surprise-modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="surprise-title">
     <div class="modal-card surprise-card">
       <div class="surprise-burst" aria-hidden="true"></div>
       <h3 id="surprise-title" class="surprise-title">惊喜</h3>
-      <p class="surprise-text">命运还没写完…<br />再转一次，才是真的答案</p>
+      <p class="surprise-text">这一世还没写完…<br />再转一次，才是真的答案</p>
     </div>
   </div>
 
@@ -85,7 +89,7 @@
       <p class="final-tag">DESTINY LOCKED</p>
       <p class="final-number">1314</p>
       <p class="final-msg">一生一世 · 只为你</p>
-      <p class="final-sub">520 快乐，我的宇宙 💕</p>
+      <p class="final-sub">520 快乐，my sunshine 💕</p>
     </div>
   </div>
 
