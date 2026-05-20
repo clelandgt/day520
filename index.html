@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover, user-scalable=no"
+  />
+  <meta name="format-detection" content="telephone=no, email=no, address=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="x5-orientation" content="portrait" />
+  <meta name="x5-fullscreen" content="true" />
+  <meta name="full-screen" content="yes" />
+  <meta name="browsermode" content="application" />
+  <meta name="description" content="520 专属惊喜 · 输入密码解锁星尘与命运转盘" />
+  <meta property="og:title" content="520 · 爱的密码" />
+  <meta property="og:description" content="输入密码，解锁只属于你们的惊喜" />
+  <title>520 · 爱的密码</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <canvas id="starfield" aria-hidden="true"></canvas>
+
+  <section id="screen-password" class="screen active">
+    <h1 class="glitch-title" data-text="520 PROTOCOL">520 PROTOCOL</h1>
+    <p class="subtitle">输入爱的密码，解锁星尘里的你</p>
+    <label class="terminal-box" id="terminal-box" for="password-input">
+      <span class="prompt">&gt;</span>
+      <input
+        id="password-input"
+        type="tel"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        maxlength="20"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        placeholder="输入密码"
+        aria-label="密码"
+      />
+      <span class="cursor-blink">█</span>
+    </label>
+    <button type="button" id="unlock-btn" class="btn-unlock">解锁</button>
+    <p id="password-hint" class="hint" hidden>密码不对哦，再想想 💫</p>
+    <p class="hint subtle">提示：三个数字，代表我爱你</p>
+  </section>
+
+  <section id="screen-pixel" class="screen">
+    <p class="status-line"><span class="tag">$</span> cat portrait.txt <span class="tag">--mono</span></p>
+    <div class="terminal-portrait">
+      <canvas id="pixel-canvas" aria-label="ASCII 终端头像打印动画"></canvas>
+    </div>
+    <p id="pixel-progress" class="progress-text">0%</p>
+    <p id="pixel-done-msg" class="done-msg" hidden>EOF · 进入命运转盘</p>
+  </section>
+
+  <section id="screen-wheel" class="screen">
+    <h2 class="wheel-title">命运转盘 <span class="accent">FATE.SPIN</span></h2>
+    <p class="wheel-sub">奖池：520 · 666 · 888 · 999 · 1314</p>
+
+    <div class="wheel-wrap">
+      <div class="pointer" aria-hidden="true"></div>
+      <canvas id="wheel-canvas" width="420" height="420" role="img" aria-label="抽奖转盘"></canvas>
+    </div>
+
+    <button id="spin-btn" type="button" class="btn-primary">
+      <span class="btn-glow"></span>
+      启动摇奖
+    </button>
+
+    <p id="wheel-result" class="wheel-result" hidden></p>
+  </section>
+
+  <div id="surprise-modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="surprise-title">
+    <div class="modal-card surprise-card">
+      <div class="surprise-burst" aria-hidden="true"></div>
+      <h3 id="surprise-title" class="surprise-title">惊喜</h3>
+      <p class="surprise-text">命运还没写完…<br />再转一次，才是真的答案</p>
+    </div>
+  </div>
+
+  <div id="final-modal" class="modal" hidden role="dialog" aria-modal="true">
+    <div class="modal-card final-card">
+      <p class="final-tag">DESTINY LOCKED</p>
+      <p class="final-number">1314</p>
+      <p class="final-msg">一生一世 · 只为你</p>
+      <p class="final-sub">520 快乐，我的宇宙 💕</p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
